@@ -1,10 +1,10 @@
 package com.kumuluz.ee.samples.microservices.simple;
 
-import com.kumuluz.ee.logs.LogManager;
-import com.kumuluz.ee.logs.Logger;
+
+import com.kumuluz.ee.logs.cdi.Log;
+import com.kumuluz.ee.logs.cdi.LogParams;
 import com.kumuluz.ee.samples.microservices.simple.models.Service;
 import org.eclipse.microprofile.metrics.Histogram;
-import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Metered;
 import org.eclipse.microprofile.metrics.annotation.Metric;
 import org.eclipse.microprofile.metrics.annotation.Timed;
@@ -19,14 +19,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
-
+@Log
 @Path("/services")
 @RequestScoped
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class ServiceResource {
 
-    private static final Logger LOG = LogManager.getLogger(ServiceResource.class.getName());
+    //private static final Logger LOG = LogManager.getLogger(ServiceResource.class.getName());
 
     @PersistenceContext
     private EntityManager em;
@@ -43,12 +43,12 @@ public class ServiceResource {
     @GET
     @Metered(name = "getServices_meter")
     public Response getServices() {
-        LOG.trace("getServices ENTRY");
+        //LOG.trace("getServices ENTRY");
         TypedQuery<Service> query = em.createNamedQuery("Service.findAll", Service.class);
 
         List<Service> services = query.getResultList();
         histogram.update(services.size());
-        LOG.info("Stevilo dodanih storitev: {}", services.size());
+        //LOG.info("Stevilo dodanih storitev: {}", services.size());
         return Response.ok(services).build();
     }
     /**
@@ -60,12 +60,12 @@ public class ServiceResource {
     @Path("/{id}")
     @Timed(name = "getService_timer")
     public Response getService(@PathParam("id") Integer id) {
-        LOG.trace("getService ENTRY");
+        //LOG.trace("getService ENTRY");
         Service p = em.find(Service.class, id);
 
         if (p == null)
             return Response.status(Response.Status.NOT_FOUND).build();
-        LOG.info("Prikazana storitev ID: {}", p.getId());
+        //LOG.info("Prikazana storitev ID: {}", p.getId());
         return Response.ok(p).build();
     }
 
@@ -75,7 +75,7 @@ public class ServiceResource {
     @POST
     @Path("/{id}")
     public Response editService(@PathParam("id") Integer id, Service service) {
-        LOG.trace("editService ENTRY");
+        //LOG.trace("editService ENTRY");
         Service p = em.find(Service.class, id);
 
         if (p == null)
@@ -91,7 +91,7 @@ public class ServiceResource {
         em.persist(p);
 
         em.getTransaction().commit();
-        LOG.info("Urejena storitev ID: {}", p.getId());
+        //LOG.info("Urejena storitev ID: {}", p.getId());
         return Response.status(Response.Status.CREATED).entity(p).build();
     }
 
@@ -100,7 +100,7 @@ public class ServiceResource {
      */
     @POST
     public Response createService(Service p) {
-        LOG.trace("createService ENTRY");
+        //LOG.trace("createService ENTRY");
         p.setId(null);
 
         em.getTransaction().begin();
@@ -108,7 +108,7 @@ public class ServiceResource {
         em.persist(p);
 
         em.getTransaction().commit();
-        LOG.info("Create service ID: {}", p.getId());
+        //LOG.info("Create service ID: {}", p.getId());
         return Response.status(Response.Status.CREATED).entity(p).build();
     }
 
@@ -122,7 +122,7 @@ public class ServiceResource {
     @GET
     @Path("/config")
     public Response test() {
-        LOG.trace("config ENTRY");
+        //LOG.trace("config ENTRY");
         String response =
                 "{" +
                         "\"jndi-name\": \"%s\"," +
@@ -140,7 +140,7 @@ public class ServiceResource {
                 properties.getPassword(),
                 properties.getMaxPoolSize()
         );
-        LOG.trace("config uspesen EXIT");
+        //LOG.trace("config uspesen EXIT");
         return Response.ok(response).build();
     }
 }
